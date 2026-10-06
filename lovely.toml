@@ -1,0 +1,361 @@
+[manifest]
+dump_lua = true
+priority = 1
+version = "1.0.0"
+
+# Utilitools requirement ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== =====
+[[patches]]
+[patches.pattern]
+match_indent = true
+pattern = '''cs = bs.load(project.initState)'''
+payload = '''
+if mods.utilitools == nil then
+	local buttonPressed = love.window.showMessageBox("We Will Add More Fish", "We Will Add More Fish requires Utilitools. Please install that mod.", { "Ok", "No" })
+	if buttonPressed == 2 then error("We Will Add More Fish: This is what you get for not installing Utilitools even though this mod needs it") end
+	love.quit()
+	error("We Will Add More Fish: Failed to quit game.")
+end
+utilitools.files.more_fish.startup()
+'''
+position = "after"
+target = "main.lua"
+times = 1
+
+# Adding fish ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== =====
+[[patches]]
+[patches.pattern]
+match_indent = true
+pattern = '''local fishJson = dpf.loadJson('data/fish.json')'''
+payload = '''
+local moreFish = dpf.loadJson(mods.more_fish.path .. "/fish.json/")
+self.animFish = {}
+'''
+position = "after"
+target = "states/Fishing.lua"
+times = 1
+
+[[patches]]
+[patches.pattern]
+match_indent = true
+pattern = '''
+	table.insert(self.orderedFish,v.id)
+end
+'''
+payload = '''
+for i,v in ipairs(moreFish) do
+	if love.filesystem.exists(mods.more_fish.path .. "/assets/textures/fishing/fish/" .. v.id .. ".png") then
+		v.spr = love.graphics.newImage(mods.more_fish.path .. "/assets/textures/fishing/fish/" .. v.id .. ".png")
+	else
+		v.spr = love.graphics.newImage("assets/fishing/fish/blockjaw.png")
+		print("no fish image found for " .. v.id)
+	end
+	if v.anim then
+		utilitools.try(mods.more_fish, function()
+			v.spr2 = ez.newjson(mods.more_fish.path .. "/assets/_animations/fishing/fish/" .. v.id):instance()
+			self.animFish[v.id] = v
+		end)
+	end
+
+	if not love.filesystem.exists(mods.more_fish.path .. "/assets/sounds/fishing/vo/" .. v.id .. ".ogg") then
+		print("no fish audio found for " .. v.id)
+	end
+
+	local recentMultApplied = 1
+	if savedata.lastPlayedLevel then
+		local boost = false
+		if v.level then
+			boost = v.level == savedata.lastPlayedLevel
+		elseif v.songname then
+			boost = mods.more_fish.config.lastPlayed == savedata.lastPlayedLevel and mods.more_fish.config.lastCustom and mods.more_fish.config.lastName == v.songname and mods.more_fish.config.lastArtist == v.artist and (not v.charter or mods.more_fish.config.lastCharter == v.charter or mods.more_fish.config.lastCharter == v.charter2)
+		end
+		if boost then
+			recentMultApplied = mostRecentMult
+			print("!!!!!Applying boost to catching " .. v.id .. ", linked to " .. savedata.lastPlayedLevel)
+		end
+	end
+
+
+	self.fish[v.id] = v
+
+	for _ = 1, v.mult * globalMult * recentMultApplied do
+		table.insert(self.pullTable, v.id)
+	end
+	table.insert(self.orderedFish,v.id)
+end
+'''
+position = "after"
+target = "states/Fishing.lua"
+times = 1
+
+# Book Patching ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== =====
+[[patches]]
+[patches.pattern]
+match_indent = true
+pattern = "book = love.graphics.newImage('assets/fishing/book.png'),"
+payload = "more_fish_book = sprites.fishing.more_fish_book,"
+position = "after"
+target = "states/Fishing.lua"
+times = 1
+
+[[patches]]
+[patches.regex]
+line_prepend = "$indent"
+pattern = '''(?<indent>\s+)(?<stuff>if savedata\.fishing\.hasBook( and savedata\.fishing\.hasDashBook)?) then\n\s+self.caughtFish = fish'''
+payload = '''
+$stuff and savedata.fishing.hasMoreFishBook then
+	self.caughtFish = fish
+'''
+position = "at"
+target = "states/Fishing.lua"
+times = 1
+
+[[patches]]
+[patches.pattern]
+match_indent = true
+pattern = '''--check if fish has been caught already. if this is the first time, go to rodney's words of wisdom.'''
+payload = '''
+if self.caughtFish == 'more_fish_book' then
+	self.rodneyText = loc.get('fish_more_fish_book_description')
+	self.rodneyTextY = 52
+	startFade = true
+else
+'''
+position = "before"
+target = "states/Fishing.lua"
+times = 1
+
+[[patches]]
+[patches.pattern]
+match_indent = true
+pattern = '''
+end
+
+if startFade then
+'''
+payload = '''
+	end
+end
+if startFade then
+'''
+position = "at"
+target = "states/Fishing.lua"
+times = 1
+
+[[patches]]
+[patches.pattern]
+match_indent = true
+pattern = '''
+self.caughtFish = *book'
+savedata.fishing.ha*Book = true
+'''
+payload = '''end'''
+position = "after"
+target = "states/Fishing.lua"
+times = 1
+
+[[patches]]
+[patches.pattern]
+match_indent = true
+pattern = '''
+self.caughtFish = *book'
+savedata.fishing.ha*Book = true
+'''
+payload = '''
+if savedata.fishing.hasBook and savedata.fishing.hasDashBook then
+	self.caughtFish = 'more_fish_book'
+	savedata.fishing.hasMoreFishBook = true
+else
+'''
+position = "before"
+target = "states/Fishing.lua"
+times = 1
+
+# Quote patching ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== =====
+[[patches]]
+[patches.pattern]
+match_indent = true
+pattern = "self.rodneyText = loc.get('fish_rodneyQuote',{loc.get('fish_'..self.caughtFish..'_description')})"
+payload = '''
+if string.find(self.caughtFish, "more_fish") then
+	self.rodneyText = loc.get("fish_more_fish_moreFishQuote", { loc.get("fish_" .. self.caughtFish .. "_description") })
+else
+	self.rodneyText = loc.get('fish_rodneyQuote',{loc.get('fish_'..self.caughtFish..'_description')})
+end
+'''
+position = "at"
+target = "states/Fishing.lua"
+times = 1
+
+# Sound patching ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== =====
+[[patches]]
+[patches.pattern]
+match_indent = true
+pattern = "audioPath = 'assets/sfx/fishing/vo/inversalmon.ogg'"
+payload = '''
+audioPath = mods.more_fish.path .. "/assets/sounds/fishing/vo/" .. self.caughtFish .. ".ogg"
+if not love.filesystem.exists(audioPath) then
+	audioPath = 'assets/sfx/fishing/vo/inversalmon.ogg'
+end
+'''
+position = "at"
+target = "states/Fishing.lua"
+times = 1
+
+# Draw Book for some reason? I'm Penta, not Dash so i wouldnt know why ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== =====
+# its because if i dont have it then the game fucking explodes. sorry. -Dash
+[[patches]]
+[patches.pattern]
+match_indent = true
+pattern = '''local timesCaught = st:getFishCount(self.caughtFish)'''
+payload = '''
+if self.caughtFish == 'more_fish_book' then
+	love.graphics.draw(self.spr.more_fish_book,project.res.cx,project.res.cy-10,math.rad(math.sin(self.fishSiner * 0.01)*10),1,1,90,90)
+else
+'''
+position = "before"
+target = "states/Fishing.lua"
+times = 1
+
+[[patches]]
+[patches.pattern]
+match_indent = true
+pattern = "drawFishOnTop = true"
+payload = "end"
+position = "after"
+target = "states/Fishing.lua"
+times = 1
+
+# Fish size fix ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== =====
+[[patches]]
+[patches.pattern]
+match_indent = true
+pattern = '''if id == 'falsechimaera' then -- specific offsets for size 2 fish'''
+payload = '''
+if self.fish[id].big then
+	fishW, fishH = -25, 0
+end
+'''
+position = "before"
+target = "states/Fishing.lua"
+times = 1
+
+[[patches]]
+[patches.pattern]
+match_indent = true
+pattern = '''if id == 'falsechimaera' then -- we need to draw an outline on the text for readability'''
+payload = '''if id == 'falsechimaera' or self.fish[id].big then -- we need to draw an outline on the text for readability'''
+position = "at"
+target = "states/Fishing.lua"
+times = 1
+
+[[patches]]
+[patches.pattern]
+match_indent = true
+pattern = '''if self.caughtFish == 'falsechimaera' then'''
+payload = '''
+if self.fish[self.caughtFish].big then
+	local imgW, imgH = self.fish[self.caughtFish].spr:getDimensions()
+	xOffset = imgW / 2
+	yOffset = imgH / 2
+end
+'''
+position = "before"
+target = "states/Fishing.lua"
+times = 1
+
+# Fish anim ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== =====
+[[patches]]
+[patches.pattern]
+match_indent = true
+pattern = '''te.volume('ambient',self.ambientVolume)'''
+payload = '''
+for _, fish in pairs(self.animFish) do fish.spr2:update(dt) end
+'''
+position = "after"
+target = "states/Fishing.lua"
+times = 1
+
+[[patches]]
+[patches.pattern]
+match_indent = true
+pattern = '''love.graphics.draw(self.fish[self.caughtFish].spr,project.res.cx,project.res.cy-10,math.rad(math.sin(self.fishSiner * 0.01)*10),2,2,xOffset,yOffset)'''
+payload = '''
+if self.fish[self.caughtFish].anim then
+	self.fish[self.caughtFish].spr2:draw(project.res.cx,project.res.cy-10,math.rad(math.sin(self.fishSiner * 0.01)*10),2,2,xOffset,yOffset)
+else
+	love.graphics.draw(self.fish[self.caughtFish].spr,project.res.cx,project.res.cy-10,math.rad(math.sin(self.fishSiner * 0.01)*10),2,2,xOffset,yOffset)
+end
+'''
+position = "at"
+target = "states/Fishing.lua"
+times = 1
+
+[[patches]]
+[patches.pattern]
+match_indent = true
+pattern = '''love.graphics.draw(self.fish[id].spr,x,y + imgH/2,0,scale,scale, imgW/2, imgH/2)'''
+payload = '''
+if self.fish[id].anim then
+	self.fish[id].spr2:draw(x,y + imgH/2,0,scale,scale, imgW/2, imgH/2)
+else
+	love.graphics.draw(self.fish[id].spr,x,y + imgH/2,0,scale,scale, imgW/2, imgH/2)
+end
+'''
+position = "at"
+target = "states/Fishing.lua"
+times = 1
+
+# Custom level ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== =====
+[[patches]]
+[patches.pattern]
+match_indent = true
+pattern = '''savedata.lastPlayedLevel = cLevel'''
+payload = '''
+mods.more_fish.config.lastPlayed = cLevel or ""
+mods.more_fish.config.lastName = self.level.metadata.songName or ""
+mods.more_fish.config.lastArtist = self.level.metadata.artist or ""
+mods.more_fish.config.lastCharter = self.level.metadata.charter or ""
+local prefix = "levels/"
+mods.more_fish.config.lastCustom = cLevel:sub(1, #prefix) ~= prefix
+-- modlog(mods.more_fish, "Played", mods.more_fish.config.lastName, "by", mods.more_fish.config.lastArtist, "charted by", mods.more_fish.config.lastCharter, "Custom:", mods.more_fish.config.lastCustom)
+'''
+position = "after"
+target = "states/Results.lua"
+times = 1
+
+# Pause Mouse lock fix ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== =====
+[[patches]]
+[patches.pattern]
+match_indent = true
+pattern = '''self.pauseMenu.menu:resetMenus()'''
+payload = '''love.mouse.setGrabbed(false)'''
+position = "before"
+target = "states/Fishing.lua"
+times = 1
+
+[[patches]]
+[patches.pattern]
+match_indent = true
+pattern = '''self.pauseMenu:stopPause()'''
+payload = '''if savedata.options.game.lockMouseToWindow then love.mouse.setGrabbed(true) end'''
+position = "after"
+target = "states/Fishing.lua"
+times = 1
+
+[[patches]]
+[patches.pattern]
+match_indent = true
+pattern = '''self.viewingBook = true'''
+payload = '''love.mouse.setGrabbed(false)'''
+position = "after"
+target = "states/Fishing.lua"
+times = 1
+
+[[patches]]
+[patches.pattern]
+match_indent = true
+pattern = '''log('resetting fishing state...')'''
+payload = '''if savedata.options.game.lockMouseToWindow then love.mouse.setGrabbed(true) end'''
+position = "after"
+target = "states/Fishing.lua"
+times = 1
