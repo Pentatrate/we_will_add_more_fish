@@ -15,8 +15,7 @@ if mods.utilitools == nil then
 	love.quit()
 	error("We Will Add More Fish: Failed to quit game.")
 end
-utilitools.files.more_fish.startup()
-'''
+utilitools.files.more_fish.startup()'''
 position = "after"
 target = "main.lua"
 times = 1
@@ -28,8 +27,7 @@ match_indent = true
 pattern = '''local fishJson = dpf.loadJson('data/fish.json')'''
 payload = '''
 local moreFish = dpf.loadJson(mods.more_fish.path .. "/fish.json/")
-self.animFish = {}
-'''
+self.animFish = {}'''
 position = "after"
 target = "states/Fishing.lua"
 times = 1
@@ -37,10 +35,7 @@ times = 1
 [[patches]]
 [patches.pattern]
 match_indent = true
-pattern = '''
-	table.insert(self.orderedFish,v.id)
-end
-'''
+pattern = '''self.p = em.init('FishingPlayer',{x=424,y=204})'''
 payload = '''
 for i,v in ipairs(moreFish) do
 	if love.filesystem.exists(mods.more_fish.path .. "/assets/textures/fishing/fish/" .. v.id .. ".png") then
@@ -56,9 +51,7 @@ for i,v in ipairs(moreFish) do
 		end)
 	end
 
-	if not love.filesystem.exists(mods.more_fish.path .. "/assets/sounds/fishing/vo/" .. v.id .. ".ogg") then
-		print("no fish audio found for " .. v.id)
-	end
+	if not love.filesystem.exists(mods.more_fish.path .. "/assets/sounds/fishing/vo/" .. v.id .. ".ogg") then print("no fish audio found for " .. v.id) end
 
 	local recentMultApplied = 1
 	if savedata.lastPlayedLevel then
@@ -75,16 +68,12 @@ for i,v in ipairs(moreFish) do
 		end
 	end
 
-
 	self.fish[v.id] = v
 
-	for _ = 1, v.mult * globalMult * recentMultApplied do
-		table.insert(self.pullTable, v.id)
-	end
+	for _ = 1, v.mult * globalMult * recentMultApplied do table.insert(self.pullTable, v.id) end
 	table.insert(self.orderedFish,v.id)
-end
-'''
-position = "after"
+end'''
+position = "before"
 target = "states/Fishing.lua"
 times = 1
 
@@ -101,15 +90,26 @@ times = 1
 [[patches]]
 [patches.regex]
 line_prepend = "$indent"
-pattern = '''(?<indent>\s+)(?<stuff>if savedata\.fishing\.hasBook( and savedata\.fishing\.hasDashBook)?) then\n\s+self.caughtFish = fish'''
+pattern = '''\n(?<indent>[^\S\n]+)(?<stuff>if new or not savedata\.fishing\.hasBook( or not savedata\.fishing\.hasDashBook)?) then'''
 payload = '''
-$stuff and savedata.fishing.hasMoreFishBook then
-	self.caughtFish = fish
-'''
+
+$stuff or not savedata.fishing.hasMoreFishBook then'''
 position = "at"
 target = "states/Fishing.lua"
 times = 1
 
+[[patches]]
+[patches.regex]
+line_prepend = "$indent"
+pattern = '''\n(?<indent>[^\S\n]+)(?<stuff>if savedata\.fishing\.hasBook( and savedata\.fishing\.hasDashBook)?) then\n\s+(?<stuff2>self.caughtFish = fish)'''
+payload = '''
+$stuff and savedata.fishing.hasMoreFishBook then
+	$stuff'''
+position = "at"
+target = "states/Fishing.lua"
+times = 1
+
+# Book text ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== =====
 [[patches]]
 [patches.pattern]
 match_indent = true
@@ -119,8 +119,7 @@ if self.caughtFish == 'more_fish_book' then
 	self.rodneyText = loc.get('fish_more_fish_book_description')
 	self.rodneyTextY = 52
 	startFade = true
-else
-'''
+else'''
 position = "before"
 target = "states/Fishing.lua"
 times = 1
@@ -131,43 +130,53 @@ match_indent = true
 pattern = '''
 end
 
-if startFade then
-'''
+if startFade then'''
 payload = '''
 	end
 end
-if startFade then
-'''
+if startFade then'''
 position = "at"
 target = "states/Fishing.lua"
 times = 1
 
+# Book visuals ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== =====
 [[patches]]
 [patches.pattern]
 match_indent = true
-pattern = '''
-self.caughtFish = *book'
-savedata.fishing.ha*Book = true
+pattern = '''local timesCaught = st:getFishCount(self.caughtFish)'''
+payload = '''
+if self.caughtFish == 'more_fish_book' then
+	love.graphics.draw(self.spr.more_fish_book,project.res.cx,project.res.cy-10,math.rad(math.sin(self.fishSiner * 0.01)*10),1,1,90,90)
+else
 '''
-payload = '''end'''
-position = "after"
+position = "before"
 target = "states/Fishing.lua"
 times = 1
 
 [[patches]]
 [patches.pattern]
 match_indent = true
-pattern = '''
-self.caughtFish = *book'
-savedata.fishing.ha*Book = true
-'''
+pattern = "drawFishOnTop = true"
+payload = "end"
+position = "after"
+target = "states/Fishing.lua"
+times = 1
+
+# Catch book ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== =====
+[[patches]]
+[patches.regex]
+line_prepend = "$indent"
+pattern = '''(?<pre>\n\selse(\s+if savedata\.fishing\.hasBook then)?)\n(?<indent>[^\S\n]*)(?<stuff>self\.caughtFish = '(dash_)?book')\s+(?<stuff2>savedata\.fishing\.has(Dash)?Book = true)'''
 payload = '''
-if savedata.fishing.hasBook and savedata.fishing.hasDashBook then
+$pre
+if savedata.fishing.hasBook and (not self.spr.dash_book or savedata.fishing.hasDashBook) then
 	self.caughtFish = 'more_fish_book'
 	savedata.fishing.hasMoreFishBook = true
 else
-'''
-position = "before"
+	$stuff
+	$stuff2
+end'''
+position = "at"
 target = "states/Fishing.lua"
 times = 1
 
@@ -175,7 +184,7 @@ times = 1
 [[patches]]
 [patches.pattern]
 match_indent = true
-pattern = "self.rodneyText = loc.get('fish_rodneyQuote',{loc.get('fish_'..self.caughtFish..'_description')})"
+pattern = '''self.rodneyText = loc.get('fish_rodneyQuote',{loc.get('fish_'..self.caughtFish..'_description')})'''
 payload = '''
 if string.find(self.caughtFish, "more_fish") then
 	self.rodneyText = loc.get("fish_more_fish_moreFishQuote", { loc.get("fish_" .. self.caughtFish .. "_description") })
@@ -202,44 +211,7 @@ position = "at"
 target = "states/Fishing.lua"
 times = 1
 
-# Draw Book for some reason? I'm Penta, not Dash so i wouldnt know why ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== =====
-# its because if i dont have it then the game fucking explodes. sorry. -Dash
-[[patches]]
-[patches.pattern]
-match_indent = true
-pattern = '''local timesCaught = st:getFishCount(self.caughtFish)'''
-payload = '''
-if self.caughtFish == 'more_fish_book' then
-	love.graphics.draw(self.spr.more_fish_book,project.res.cx,project.res.cy-10,math.rad(math.sin(self.fishSiner * 0.01)*10),1,1,90,90)
-else
-'''
-position = "before"
-target = "states/Fishing.lua"
-times = 1
-
-[[patches]]
-[patches.pattern]
-match_indent = true
-pattern = "drawFishOnTop = true"
-payload = "end"
-position = "after"
-target = "states/Fishing.lua"
-times = 1
-
 # Fish size fix ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== =====
-[[patches]]
-[patches.pattern]
-match_indent = true
-pattern = '''if id == 'falsechimaera' then -- specific offsets for size 2 fish'''
-payload = '''
-if self.fish[id].big then
-	fishW, fishH = -25, 0
-end
-'''
-position = "before"
-target = "states/Fishing.lua"
-times = 1
-
 [[patches]]
 [patches.pattern]
 match_indent = true
