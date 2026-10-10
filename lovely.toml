@@ -67,6 +67,7 @@ for i,v in ipairs(moreFish) do
 			boost = v.level == savedata.lastPlayedLevel
 		elseif v.songname then
 			boost = mods.more_fish.config.lastPlayed == savedata.lastPlayedLevel and mods.more_fish.config.lastCustom and mods.more_fish.config.lastName == v.songname and mods.more_fish.config.lastArtist == v.artist and (not v.charter or mods.more_fish.config.lastCharter == v.charter or mods.more_fish.config.lastCharter == v.charter2)
+			modlog(mods.more_fish, v.id, mods.more_fish.config.lastPlayed == savedata.lastPlayedLevel, mods.more_fish.config.lastCustom, mods.more_fish.config.lastName == v.songname, mods.more_fish.config.lastArtist == v.artist, not v.charter, mods.more_fish.config.lastCharter == v.charter, mods.more_fish.config.lastCharter == v.charter2)
 		end
 		if boost then
 			recentMultApplied = mostRecentMult
@@ -314,10 +315,11 @@ payload = '''
 mods.more_fish.config.lastPlayed = cLevel or ""
 mods.more_fish.config.lastName = self.level.metadata.songName or ""
 mods.more_fish.config.lastArtist = self.level.metadata.artist or ""
-mods.more_fish.config.lastCharter = self.level.metadata.charter or ""
+mods.more_fish.config.lastCharter = cs.variant and cs.variant.charter or self.level.metadata.charter or ""
 local prefix = "levels/"
 mods.more_fish.config.lastCustom = cLevel:sub(1, #prefix) ~= prefix
 -- modlog(mods.more_fish, "Played", mods.more_fish.config.lastName, "by", mods.more_fish.config.lastArtist, "charted by", mods.more_fish.config.lastCharter, "Custom:", mods.more_fish.config.lastCustom)
+bbp.utils.saveConfig(mods.more_fish.id)
 '''
 position = "after"
 target = "states/Results.lua"

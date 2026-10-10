@@ -1,7 +1,9 @@
 {
 	"fish_more_fish_book": "Book",
-	"fish_more_fish_book_description": "\"Greetings.\n\nWow! It's a Book!\"\n\n- Stell, 2026, foreword from \"Book\"",
-	"fish_more_fish_moreFishQuote": "\"@@1@@\"\n\n- Stell, 2026, \"Book\"",
+	"fish_more_fish_book_description": "\"Greetings.\n\nWow! It's a Book!\"\n\n- Nittneuk, Stell, and Penta, foreword from \"Book\"",
+	"fish_more_fish_moreFishQuote": "\"@@1@@\"\n\n- Discovered by Stell, \"Book\"",
 	"fish_more_fish_velocid": "Velocid",
-	"fish_more_fish_velocid_description": "The Velocid likes to live in dark, shallow waters, similarly colored to the deep space it originated from. It is where it can make the best uses of its bioluminescent body, to light up its surroundings on demand.\nThe Velocid also likes to run around and find other creatures to befriend them, where it lures them with its beautiful blue marks.\nPerhaps, one day, it will try to befriend you."
+	"fish_more_fish_velocid_description": "The Velocid likes to live in dark, shallow waters, similarly colored to the deep space it originated from. It is where it can make the best uses of its bioluminescent body, to light up its surroundings on demand. The Velocid also likes to run around and find other creatures to befriend them, where it lures them with its beautiful blue marks. Perhaps, one day, it will try to befriend you.",
+	"fish_more_fish_gloam": "Gloam",
+	"fish_more_fish_gloam_description": "The Gloam is a large fish, easily recognized by its friendly appearance and demeanor. Its body shifts in color as the hours pass, becoming warmer during the day and darker during the night. Its most peculiar feature is the coin dangling from its forehead. The Gloam appears to believe the coin to be a source of food, and will spend the majority of its life chasing the very lure attached to it's own body. Whether this is an ingenious hunting technique or a complete lack of awareness remains unclear but it does not seem particularly bothered either way."
 }

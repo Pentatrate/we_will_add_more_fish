@@ -7,5 +7,14 @@
 		"charter": "nittneuk",
 		"big": true,
 		"anim": true
+	},
+	{
+		"id": "more_fish_gloam",
+		"mult": 1,
+		"songname": "Sunset of Seven Suns",
+		"artist": "Toby Fox",
+		"charter": "nittneuk + cytruss",
+		"big": true,
+		"anim": true
 	}
 ]
