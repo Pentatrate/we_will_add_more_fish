@@ -103,8 +103,9 @@ times = 1
 line_prepend = "$indent"
 pattern = '''\n(?<indent>[^\S\n]+)(?<stuff>if savedata\.fishing\.hasBook( and savedata\.fishing\.hasDashBook)?) then\n\s+(?<stuff2>self.caughtFish = fish)'''
 payload = '''
+
 $stuff and savedata.fishing.hasMoreFishBook then
-	$stuff'''
+	$stuff2'''
 position = "at"
 target = "states/Fishing.lua"
 times = 1
@@ -241,9 +242,7 @@ times = 1
 [patches.pattern]
 match_indent = true
 pattern = '''te.volume('ambient',self.ambientVolume)'''
-payload = '''
-for _, fish in pairs(self.animFish) do fish.spr2:update(dt) end
-'''
+payload = '''for _, fish in pairs(self.animFish) do fish.spr2:update(dt) end'''
 position = "after"
 target = "states/Fishing.lua"
 times = 1
@@ -257,8 +256,7 @@ if self.fish[self.caughtFish].anim then
 	self.fish[self.caughtFish].spr2:draw(project.res.cx,project.res.cy-10,math.rad(math.sin(self.fishSiner * 0.01)*10),2,2,xOffset,yOffset)
 else
 	love.graphics.draw(self.fish[self.caughtFish].spr,project.res.cx,project.res.cy-10,math.rad(math.sin(self.fishSiner * 0.01)*10),2,2,xOffset,yOffset)
-end
-'''
+end'''
 position = "at"
 target = "states/Fishing.lua"
 times = 1
@@ -272,8 +270,7 @@ if self.fish[id].anim then
 	self.fish[id].spr2:draw(x,y + imgH/2,0,scale,scale, imgW/2, imgH/2)
 else
 	love.graphics.draw(self.fish[id].spr,x,y + imgH/2,0,scale,scale, imgW/2, imgH/2)
-end
-'''
+end'''
 position = "at"
 target = "states/Fishing.lua"
 times = 1
