@@ -43,7 +43,6 @@ for i,v in ipairs(moreFish) do
 			boost = v.level == savedata.lastPlayedLevel
 		elseif v.songname then
 			boost = mods.more_fish.config.lastPlayed == savedata.lastPlayedLevel and mods.more_fish.config.lastCustom and mods.more_fish.config.lastName == v.songname and mods.more_fish.config.lastArtist == v.artist and (not v.charter or mods.more_fish.config.lastCharter == v.charter or mods.more_fish.config.lastCharter == v.charter2)
-			modlog(mods.more_fish, v.id, boost)
 		end
 		if boost then
 			recentMultApplied = mostRecentMult
