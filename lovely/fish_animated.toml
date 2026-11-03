@@ -1,0 +1,50 @@
+[manifest]
+dump_lua = true
+priority = 1
+version = "1.0.0"
+
+# Fish anim ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== =====
+[[patches]]
+[patches.pattern]
+match_indent = true
+pattern = '''te.volume('ambient',self.ambientVolume)'''
+payload = '''for _, fish in pairs(self.animFish) do fish.spr2:update(dt) end'''
+position = "after"
+target = "states/Fishing.lua"
+times = 1
+
+[[patches]]
+[patches.pattern]
+match_indent = true
+pattern = '''love.graphics.draw(self.fish[self.caughtFish].spr,project.res.cx,project.res.cy-10,math.rad(math.sin(self.fishSiner * 0.01)*10),2,2,xOffset,yOffset)'''
+payload = '''
+if self.fish[self.caughtFish].anim then
+	self.fish[self.caughtFish].spr2:draw(project.res.cx,project.res.cy-10,math.rad(math.sin(self.fishSiner * 0.01)*10),2,2,xOffset,yOffset)
+else
+	love.graphics.draw(self.fish[self.caughtFish].spr,project.res.cx,project.res.cy-10,math.rad(math.sin(self.fishSiner * 0.01)*10),2,2,xOffset,yOffset)
+end'''
+position = "at"
+target = "states/Fishing.lua"
+times = 1
+
+[[patches]]
+[patches.pattern]
+match_indent = true
+pattern = '''love.graphics.draw(self.fish[id].spr,*)'''
+payload = '''
+if self.fish[id].anim then
+	local w, h = self.fish[id].spr:getDimensions()
+	self.fish[id].spr2:draw(x or project.res.cx, y + h / 2, 0, scale, scale, w / 2, h / 2)
+else'''
+position = "before"
+target = "states/Fishing.lua"
+times = 1
+
+[[patches]]
+[patches.pattern]
+match_indent = true
+pattern = '''love.graphics.draw(self.fish[id].spr,*)'''
+payload = '''end'''
+position = "after"
+target = "states/Fishing.lua"
+times = 1

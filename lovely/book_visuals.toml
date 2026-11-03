@@ -1,0 +1,27 @@
+[manifest]
+dump_lua = true
+priority = 1
+version = "1.0.0"
+
+# Book visuals ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== =====
+[[patches]]
+[patches.pattern]
+match_indent = true
+pattern = '''local timesCaught = st:getFishCount(self.caughtFish)'''
+payload = '''
+if self.caughtFish == 'more_fish_book' then
+	love.graphics.draw(self.spr.more_fish_book,project.res.cx,project.res.cy-10,math.rad(math.sin(self.fishSiner * 0.01)*10),1,1,90,90)
+else
+'''
+position = "before"
+target = "states/Fishing.lua"
+times = 1
+
+[[patches]]
+[patches.pattern]
+match_indent = true
+pattern = "drawFishOnTop = true"
+payload = "end"
+position = "after"
+target = "states/Fishing.lua"
+times = 1

@@ -1,0 +1,53 @@
+[manifest]
+dump_lua = true
+priority = 1
+version = "1.0.0"
+
+# Fish size fix ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== =====
+[[patches]]
+[patches.pattern]
+match_indent = true
+pattern = '''love.graphics.setScissor(pp.x1-pp.w*0.5,pp.y,pp.w,pp.h)'''
+payload = '''-- love.graphics.setScissor(pp.x1-pp.w*0.5,pp.y,pp.w,pp.h) -- Penta: removing this because theres no reason for it other than visuals'''
+position = "at"
+target = "states/Fishing.lua"
+# times = 1/2
+
+[[patches]]
+[patches.pattern]
+match_indent = true
+pattern = '''if id == 'falsechimaera' then -- specific offsets for size 2 fish
+	fishW, fishH = -25, 0
+end'''
+payload = '''
+if self.fish[id].big then -- this is useless if you have ExtraStuff or BetterFishing enabled
+	local w, h = self.fish[id].spr:getDimensions()
+	fishW, fishH = w / 2 - 25, math.min(0, 70 - h)
+end'''
+position = "after"
+target = "states/Fishing.lua"
+times = 1
+
+[[patches]]
+[patches.pattern]
+match_indent = true
+pattern = '''if id == 'falsechimaera' then -- we need to draw an outline on the text for readability'''
+payload = '''if id == 'falsechimaera' or self.fish[id].big then -- we need to draw an outline on the text for readability'''
+position = "at"
+target = "states/Fishing.lua"
+times = 1
+
+[[patches]]
+[patches.pattern]
+match_indent = true
+pattern = '''if self.caughtFish == 'falsechimaera' then'''
+payload = '''
+if self.fish[self.caughtFish].big then
+	local imgW, imgH = self.fish[self.caughtFish].spr:getDimensions()
+	xOffset = imgW / 2
+	yOffset = imgH / 2
+end
+'''
+position = "before"
+target = "states/Fishing.lua"
+times = 1

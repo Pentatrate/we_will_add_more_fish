@@ -1,0 +1,61 @@
+[manifest]
+dump_lua = true
+priority = 1
+version = "1.0.0"
+
+# Adding fish ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== =====
+[[patches]]
+[patches.pattern]
+match_indent = true
+pattern = '''local fishJson = dpf.loadJson('data/fish.json')'''
+payload = '''
+local moreFish = dpf.loadJson(mods.more_fish.path .. "/fish.json/")
+self.animFish = {}'''
+position = "after"
+target = "states/Fishing.lua"
+times = 1
+
+[[patches]]
+[patches.pattern]
+match_indent = true
+pattern = '''self.p = em.init('FishingPlayer',{x=424,y=204})'''
+payload = '''
+for i,v in ipairs(moreFish) do
+	if love.filesystem.exists(mods.more_fish.path .. "/assets/textures/fishing/fish/" .. v.id .. ".png") then
+		v.spr = love.graphics.newImage(mods.more_fish.path .. "/assets/textures/fishing/fish/" .. v.id .. ".png")
+	else
+		v.spr = love.graphics.newImage("assets/fishing/fish/blockjaw.png")
+		print("no fish image found for " .. v.id)
+	end
+	if v.anim then
+		utilitools.try(mods.more_fish, function()
+			v.spr2 = ez.newjson(mods.more_fish.path .. "/assets/_animations/fishing/fish/" .. v.id):instance()
+			self.animFish[v.id] = v
+		end)
+	end
+
+	if not love.filesystem.exists(mods.more_fish.path .. "/assets/sounds/fishing/vo/" .. v.id .. ".ogg") then print("no fish audio found for " .. v.id) end
+
+	local recentMultApplied = 1
+	if savedata.lastPlayedLevel then
+		local boost = false
+		if v.level then
+			boost = v.level == savedata.lastPlayedLevel
+		elseif v.songname then
+			boost = mods.more_fish.config.lastPlayed == savedata.lastPlayedLevel and mods.more_fish.config.lastCustom and mods.more_fish.config.lastName == v.songname and mods.more_fish.config.lastArtist == v.artist and (not v.charter or mods.more_fish.config.lastCharter == v.charter or mods.more_fish.config.lastCharter == v.charter2)
+			modlog(mods.more_fish, v.id, boost)
+		end
+		if boost then
+			recentMultApplied = mostRecentMult
+			print("!!!!!Applying boost to catching " .. v.id .. ", linked to " .. savedata.lastPlayedLevel)
+		end
+	end
+
+	self.fish[v.id] = v
+
+	for _ = 1, v.mult * globalMult * recentMultApplied do table.insert(self.pullTable, v.id) end
+	table.insert(self.orderedFish,v.id)
+end'''
+position = "before"
+target = "states/Fishing.lua"
+times = 1

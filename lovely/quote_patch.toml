@@ -1,0 +1,20 @@
+[manifest]
+dump_lua = true
+priority = 1
+version = "1.0.0"
+
+# Quote patching ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== =====
+[[patches]]
+[patches.pattern]
+match_indent = true
+pattern = '''self.rodneyText = loc.get('fish_rodneyQuote',{loc.get('fish_'..self.caughtFish..'_description')})'''
+payload = '''
+if string.find(self.caughtFish, "more_fish") then
+	self.rodneyText = loc.get("fish_more_fish_moreFishQuote", { loc.get("fish_" .. self.caughtFish .. "_description") })
+else
+	self.rodneyText = loc.get('fish_rodneyQuote',{loc.get('fish_'..self.caughtFish..'_description')})
+end
+'''
+position = "at"
+target = "states/Fishing.lua"
+times = 1

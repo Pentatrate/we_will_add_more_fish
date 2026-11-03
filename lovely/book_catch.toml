@@ -1,0 +1,22 @@
+[manifest]
+dump_lua = true
+priority = 1
+version = "1.0.0"
+
+# Catch book ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== =====
+[[patches]]
+[patches.regex]
+line_prepend = "$indent"
+pattern = '''(?<pre>\n\selse(\s+if savedata\.fishing\.hasBook then)?)\s*\n(?<indent>[^\S\n]*)(?<stuff>self\.caughtFish = '(dash_)?book')\s+(?<stuff2>savedata\.fishing\.has(Dash)?Book = true)'''
+payload = '''
+$pre
+if savedata.fishing.hasBook and (not self.spr.dash_book or savedata.fishing.hasDashBook) then
+	self.caughtFish = 'more_fish_book'
+	savedata.fishing.hasMoreFishBook = true
+else
+	$stuff
+	$stuff2
+end'''
+position = "at"
+target = "states/Fishing.lua"
+times = 1

@@ -1,0 +1,23 @@
+[manifest]
+dump_lua = true
+priority = 0
+version = "1.0.0"
+
+# Custom level ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== =====
+[[patches]]
+[patches.pattern]
+match_indent = true
+pattern = '''savedata.lastPlayedLevel = cLevel'''
+payload = '''
+mods.more_fish.config.lastPlayed = cLevel or ""
+mods.more_fish.config.lastName = self.level.metadata.songName or ""
+mods.more_fish.config.lastArtist = self.level.metadata.artist or ""
+mods.more_fish.config.lastCharter = cs.variant and cs.variant.charter or self.level.metadata.charter or ""
+local prefix = "levels/"
+mods.more_fish.config.lastCustom = cLevel:sub(1, #prefix) ~= prefix
+-- modlog(mods.more_fish, "Played", mods.more_fish.config.lastName, "by", mods.more_fish.config.lastArtist, "charted by", mods.more_fish.config.lastCharter, "Custom:", mods.more_fish.config.lastCustom)
+bbp.utils.saveConfig(mods.more_fish.id)
+'''
+position = "after"
+target = "states/Results.lua"
+times = 1

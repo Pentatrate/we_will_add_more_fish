@@ -1,0 +1,37 @@
+[manifest]
+dump_lua = true
+priority = 1
+version = "1.0.0"
+
+# Book Patching ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== =====
+[[patches]]
+[patches.pattern]
+match_indent = true
+pattern = "book = love.graphics.newImage('assets/fishing/book.png'),"
+payload = "more_fish_book = sprites.fishing.more_fish_book,"
+position = "after"
+target = "states/Fishing.lua"
+times = 1
+
+[[patches]]
+[patches.regex]
+line_prepend = "$indent"
+pattern = '''\n(?<indent>[^\S\n]+)(?<stuff>if new or not savedata\.fishing\.hasBook( or not savedata\.fishing\.hasDashBook)?) then'''
+payload = '''
+
+$stuff or not savedata.fishing.hasMoreFishBook then'''
+position = "at"
+target = "states/Fishing.lua"
+times = 1
+
+[[patches]]
+[patches.regex]
+line_prepend = "$indent"
+pattern = '''\n(?<indent>[^\S\n]+)(?<stuff>if savedata\.fishing\.hasBook( and savedata\.fishing\.hasDashBook)?) then\s+(?<stuff2>self\.caughtFish = fish)'''
+payload = '''
+
+$stuff and savedata.fishing.hasMoreFishBook then
+	$stuff2'''
+position = "at"
+target = "states/Fishing.lua"
+times = 1

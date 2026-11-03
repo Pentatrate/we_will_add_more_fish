@@ -1,0 +1,90 @@
+[manifest]
+dump_lua = true
+priority = 1
+version = "1.0.0"
+
+# Fish size fix ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== =====
+[[patches]]
+[patches.pattern]
+match_indent = true
+pattern = '''local imgW, imgH = self.fish[id].spr:getDimensions()'''
+payload = '''if imgH > spacingY then y = y - imgH + spacingY end'''
+position = "after"
+target = "states/Fishing.lua"
+times = 1
+
+# Book in book ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== =====
+[[patches]]
+[patches.regex]
+line_prepend = "$indent"
+pattern = '''(?<indent>[^\S\n]+)color\(\)\s+local wmult = 0[\s\S]+self\.bookMenu:draw\(\)\s+love\.graphics\.setScissor\(\)\s+end(\s*\t{5}end)?'''
+payload = '''
+if pp.w > 0 then
+	-- Penta: the ExtraStuff/betterFishing code was so horrible im replacing the whole thing i cant look at this shit anymore
+	color()
+	local function checkConfig(betterFishingConfig, extraStuffConfig)
+		if mods.betterFishing and mods.betterFishing.enabled then
+			return mods.betterFishing.config[betterFishingConfig]
+		end
+		return extraStuffConfig
+	end
+	local customBookTextures = checkConfig("customBookTextures", extrasavedata and extrasavedata.fishingBookText)
+	local fishPerPage = checkConfig("fishPerPage", self.fishPerPage)
+
+	local wmult = helpers.clamp(pp.w / (fishPerPage <= 8 and 220 or 440), 0, 1)
+
+	local x, y = project.res.cx, project.res.cy
+	local baseScale, hoverScale = 1, 1.08
+	local bw, bh = customBookTextures and 217 or 180, customBookTextures and 300 or 180
+	local sw, sh = 100, 120
+	local xPadding = 5
+	local books = {}
+
+	local function mouseOver(x2, y2, w, h)
+		return math.abs(x2 - mouse.rx) <= w / 2 and math.abs(y2 - mouse.ry) <= h / 2
+	end
+	local function checkMod(id) return mods[id] and mods[id].enabled end
+	local function addBook(id, bookName, sprName, frontName)
+		-- id: mod id or nil if vanilla
+		-- bookName: name of the book in the lang
+		-- sprName: name of the sprite in self.spr
+		-- frontName: name of the frontal sprite or nil
+		if id and not checkMod(id) then return end
+		table.insert(books, { id = id, name = bookName, sprName = sprName, front = frontName, scale = baseScale })
+	end
+
+	addBook(nil,                   "book",           "book",            "bookfront")
+	addBook("openocean",      "dash_book",      "dash_book",            "dashfront")
+	addBook("more_fish", "more_fish_book", "more_fish_book", "more_fish_book_front")
+
+	for i, book in ipairs(books) do
+		book.x, book.y = ((customBookTextures and bw or sw) + xPadding) * (i - 1 - (#books - 1) / 2), y - 12
+
+		book.big = customBookTextures and sprites.fishing[book.front]
+		book.spr = book.big or self.spr[book.sprName]
+
+		local w, h = book.spr:getDimensions()
+		local w2, h2 = book.big and w or sw, book.big and h or sh
+
+		if mouseOver(x + book.x, book.y, w2, h2) or self.bookMenu.selection == i then
+			book.hovered = true
+			book.scale = hoverScale
+			if mouse.pressed == -1 or maininput:pressed("accept") then
+				self:closeBook(true)
+				self:startShowCatch(book.name, false, true)
+			end
+		end
+
+		love.graphics.draw(book.spr, x + book.x * wmult, book.y, 0, book.scale * wmult, book.scale, math.ceil(w / 2), math.ceil(h / 2))
+	end
+	if customBookTextures then
+		local spr = sprites.fishing.viewbooktag
+		local w, h = spr:getDimensions()
+		love.graphics.draw(spr, x, y + 5, 0, wmult, 1, math.ceil(w / 2), math.ceil(h / 2))
+	end
+
+	self.bookMenu:draw()
+end'''
+position = "at"
+target = "states/Fishing.lua"
+times = 1
