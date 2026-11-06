@@ -2,7 +2,7 @@
 
 EA Mod for the game Beatblock
 
-by Pentatrate
+by Stell, Pentatrate, Nittneuk
 
 ![GitHub Downloads](https://img.shields.io/github/downloads/Pentatrate/we_will_add_more_fish/total)
 ![Commit Activity](https://img.shields.io/github/commit-activity/m/Pentatrate/we_will_add_more_fish)
