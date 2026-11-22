@@ -10,7 +10,7 @@ match_indent = true
 pattern = "audioPath = 'assets/sfx/fishing/vo/inversalmon.ogg'"
 payload = '''
 audioPath = mods.more_fish.path .. "/assets/sounds/fishing/vo/" .. self.caughtFish .. ".ogg"
-if not love.filesystem.exists(audioPath) then
+if not love.filesystem.getInfo(audioPath) then
 	audioPath = 'assets/sfx/fishing/vo/inversalmon.ogg'
 end
 '''

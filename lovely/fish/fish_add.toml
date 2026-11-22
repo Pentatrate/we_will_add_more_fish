@@ -21,7 +21,7 @@ match_indent = true
 pattern = '''self.p = em.init('FishingPlayer',{x=424,y=204})'''
 payload = '''
 for i,v in ipairs(moreFish) do
-	if love.filesystem.exists(mods.more_fish.path .. "/assets/textures/fishing/fish/" .. v.id .. ".png") then
+	if love.filesystem.getInfo(mods.more_fish.path .. "/assets/textures/fishing/fish/" .. v.id .. ".png") then
 		v.spr = love.graphics.newImage(mods.more_fish.path .. "/assets/textures/fishing/fish/" .. v.id .. ".png")
 	else
 		v.spr = love.graphics.newImage("assets/fishing/fish/blockjaw.png")
@@ -34,7 +34,7 @@ for i,v in ipairs(moreFish) do
 		end)
 	end
 
-	if not love.filesystem.exists(mods.more_fish.path .. "/assets/sounds/fishing/vo/" .. v.id .. ".ogg") then print("no fish audio found for " .. v.id) end
+	if not love.filesystem.getInfo(mods.more_fish.path .. "/assets/sounds/fishing/vo/" .. v.id .. ".ogg") then print("no fish audio found for " .. v.id) end
 
 	local recentMultApplied = 1
 	if savedata.lastPlayedLevel then
